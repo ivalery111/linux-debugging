@@ -5,6 +5,7 @@
 #include <sys/types.h>  /* pid_t */
 #include <sys/wait.h>   /* wait() */
 #include <unistd.h>     /* fork() */
+#include <sys/user.h>   /* struct user_regs_struct */
 
 void print_error(const char *message) {
     perror(message);
@@ -44,6 +45,14 @@ void start_debugger(pid_t child_pid) {
     while (WIFSTOPPED(wait_status)) {
 
         counter++;
+
+        struct user_regs_struct regs;
+
+        ptrace(PTRACE_GETREGS, child_pid, 0, &regs);
+
+        unsigned instruction = ptrace(PTRACE_PEEKTEXT, child_pid, regs.rip, 0);
+        print_message("counter = %u, RIP = 0x%08x, intruction = 0x%08x\n",
+                      counter, regs.rip, instruction);
 
         /* Child execute another instuction */
         if (ptrace(PTRACE_SINGLESTEP, child_pid, 0, 0) < 0) {
