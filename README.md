@@ -1,1 +1,1 @@
-# linux-debugging
+For learning purpose. Learning about debugging in Linux.
